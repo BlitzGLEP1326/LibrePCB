@@ -245,6 +245,8 @@ LibraryEditor::LibraryEditor(workspace::Workspace&   ws,
           &LibraryEditor::updateTabTitles);
   connect(overviewWidget, &LibraryOverviewWidget::dirtyChanged, this,
           &LibraryEditor::updateTabTitles);
+
+  // Edit element signals
   connect(overviewWidget,
           &LibraryOverviewWidget::editComponentCategoryTriggered, this,
           &LibraryEditor::editComponentCategoryTriggered);
@@ -258,6 +260,7 @@ LibraryEditor::LibraryEditor(workspace::Workspace&   ws,
           &LibraryEditor::editComponentTriggered);
   connect(overviewWidget, &LibraryOverviewWidget::editDeviceTriggered, this,
           &LibraryEditor::editDeviceTriggered);
+
   mUi->tabWidget->addTab(overviewWidget, overviewWidget->windowIcon(),
                          overviewWidget->windowTitle());
   setActiveEditorWidget(overviewWidget);
