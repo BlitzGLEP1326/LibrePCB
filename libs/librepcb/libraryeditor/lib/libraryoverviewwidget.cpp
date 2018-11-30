@@ -311,31 +311,34 @@ void LibraryOverviewWidget::updateElementList(QListWidget& listWidget,
 }
 
 void LibraryOverviewWidget::openContextMenuAtPos(const QPoint& pos) noexcept {
-  // Build the context menu
-  QMenu    menu;
-  QAction* aRemove = menu.addAction(QIcon(":/img/actions/delete.png"), tr("Remove"));
-
-  // Execute the context menu
-  QAction* action = menu.exec(QCursor::pos());
-
-  // Get selected item
+  // Get selected item (may be null)
   QListWidget* list = dynamic_cast<QListWidget*>(sender());
   Q_ASSERT(list);
   QListWidgetItem* selectedItem = list->itemAt(pos);
 
-  // Get item text
-  const QString itemName = selectedItem->text();
-
-  // Find file path of selected library element
-  FilePath itemPath = selectedItem ? FilePath(selectedItem->data(Qt::UserRole).toString()) : FilePath();
-  if (!itemPath.isValid()) {
+  // Get item text and validated file path
+  QString itemName = selectedItem ? selectedItem->text() : QString();
+  tl::optional<FilePath> itemPath = tl::nullopt;
+  if (selectedItem) {
+    FilePath fp = FilePath(selectedItem->data(Qt::UserRole).toString());
+    if (fp.isValid()) {
+      itemPath = tl::make_optional(fp);
+    } else {
       qWarning() << "File path for selected item is not valid";
-      return;
+    }
   }
 
-  // Handle action
+  // Build the context menu
+  QMenu menu;
+  QAction* aRemove = menu.addAction(QIcon(":/img/actions/delete.png"), tr("Remove"));
+  aRemove->setEnabled(selectedItem != nullptr && itemPath.has_value());
+
+  // Show context menu, handle action
+  QAction* action = menu.exec(QCursor::pos());
   if (action == aRemove) {
-    if (removeSelectedItem(itemName, itemPath)) {
+    Q_ASSERT(selectedItem);
+    Q_ASSERT(itemPath.has_value());
+    if (removeSelectedItem(itemName, *itemPath)) {
       delete selectedItem;
     };
   }
